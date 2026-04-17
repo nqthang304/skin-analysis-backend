@@ -11,9 +11,12 @@ async def analyze_skin(
     file: UploadFile = File(...), 
     product_name: str = Form(...)
 ):
+    file_location = None
     try:
         # 1. Lưu file ảnh tạm thời để gửi đi phân tích
-        file_location = f"temp_uploads/{file.filename}"
+        os.makedirs("temp_uploads", exist_ok=True)
+        safe_filename = os.path.basename(file.filename)
+        file_location = os.path.join("temp_uploads", safe_filename)
         with open(file_location, "wb+") as file_object:
             file_object.write(file.file.read())
         
@@ -43,3 +46,6 @@ async def analyze_skin(
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": str(e)})
+    finally:
+        if file_location and os.path.exists(file_location):
+            os.remove(file_location)
