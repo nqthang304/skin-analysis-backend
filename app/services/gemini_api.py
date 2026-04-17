@@ -53,7 +53,7 @@ def get_ai_recommendation(metrics_data: dict, product_name: str):
     try:
         # Cú pháp gọi API theo thư viện mới
         response = client.models.generate_content(
-            model='gemini-2.0-flash-exp',
+            model='gemini-2.5-pro',
             contents=prompt,
             config=types.GenerateContentConfig(
                 response_mime_type="application/json",
