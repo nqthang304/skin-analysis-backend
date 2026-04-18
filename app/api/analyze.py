@@ -32,7 +32,7 @@ async def analyze_skin(
 
         metrics = roboflow_result["data"]
         
-        # 3. Gọi Gemini để "khám bệnh" và đánh giá sản phẩm
+        # 3. Gọi Gemini 
         print("Đang gọi Gemini...")
         ai_analysis = get_ai_recommendation(metrics, product_name)
         
@@ -40,12 +40,12 @@ async def analyze_skin(
         if "error" in ai_analysis:
             return JSONResponse(status_code=500, content=ai_analysis)
         
-        # 4. Gói ghém kết quả phân tầng rõ ràng cho Frontend
+        # 4. Trả về kết quả tổng hợp cho Frontend 
         return {
             "status": "success",
             "data": {
                 "raw_metrics": metrics,                     # Dữ liệu gốc (để debug hoặc đếm số mụn)
-                "scores": ai_analysis.get("scores", {}),    # Thang điểm 10 đã tính toán (Frontend dùng để vẽ biểu đồ)
+                "scores": ai_analysis.get("scores", {}),    # Thang điểm 10 đã tính toán
                 "consultation": {                           # Lời khuyên từ chuyên gia AI
                     "skin_analysis": ai_analysis.get("skin_analysis"),
                     "product_check": ai_analysis.get("product_check"),

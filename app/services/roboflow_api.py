@@ -37,20 +37,20 @@ def analyze_image_with_roboflow(image_path: str):
             images={"image": image_path}
         )
 
-        # 2. Trích xuất dữ liệu chính xác 100% theo JSON thực tế
+        # 2. Trích xuất dữ liệu 
         output_image = res_physical[0].get('output_image', '') 
         
-        # Mụn và Lỗ chân lông (Nằm ở ngoài cùng)
+        # Mụn và Lỗ chân lông 
         acne_count = res_physical[0].get('ance_count_ob_output', 0)
         pore_count = res_physical[0].get('property_definition_output', 0)
         
-        # Loại da (Giả sử nằm trong 'model_output' giống Sắc tố, nhớ check lại nếu nó trả về sai)
+        # Loại da 
         type_output = res_skin_type[0].get('model_output', {})
         skin_type_top = int(type_output.get('top', 4)) # Ép về số nguyên (int)
         
         # Sắc tố (Nằm trong 'model_output', key là 'top' chữ thường)
         pigment_output = res_pigment[0].get('model_output', {})
-        pigment_top = int(pigment_output.get('top', 0)) # Ép chuỗi "8" thành số nguyên 8
+        pigment_top = int(pigment_output.get('top', 0)) 
 
         return {
             "status": "success",
