@@ -38,6 +38,7 @@ def analyze_image_with_roboflow(image_path: str):
         )
 
         # 2. Trích xuất dữ liệu chính xác 100% theo JSON thực tế
+        output_image = res_physical[0].get('output_image', '') 
         
         # Mụn và Lỗ chân lông (Nằm ở ngoài cùng)
         acne_count = res_physical[0].get('ance_count_ob_output', 0)
@@ -54,6 +55,7 @@ def analyze_image_with_roboflow(image_path: str):
         return {
             "status": "success",
             "data": {
+                "output_image": output_image,
                 "acne_count": acne_count,
                 "pore_count": pore_count,
                 "skin_type_index": skin_type_top,

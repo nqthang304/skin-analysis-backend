@@ -20,32 +20,43 @@ async def analyze_skin(
         with open(file_location, "wb+") as file_object:
             file_object.write(file.file.read())
         
-        # 2. Gọi Roboflow để lấy các chỉ số "Vật lý"
+        # 2. Gọi Roboflow để lấy các chỉ số "Vật lý" (Raw metrics)
         print("Đang gọi Roboflow...")
         roboflow_result = analyze_image_with_roboflow(file_location)
         
-        if roboflow_result["status"] == "error":
-            os.remove(file_location) # Dọn dẹp rác
-            return JSONResponse(status_code=500, content={"message": "Lỗi hệ thống nhận diện ảnh"})
+        if roboflow_result.get("status") == "error":
+            return JSONResponse(
+                status_code=500, 
+                content={"message": f"Lỗi hệ thống nhận diện ảnh: {roboflow_result.get('message', '')}"}
+            )
 
         metrics = roboflow_result["data"]
         
-        # 3. Chuyển số liệu Roboflow sang cho Gemini "khám bệnh"
+        # 3. Gọi Gemini để "khám bệnh" và đánh giá sản phẩm
         print("Đang gọi Gemini...")
         ai_analysis = get_ai_recommendation(metrics, product_name)
         
-        # 4. Xóa file ảnh tạm sau khi xong việc
-        os.remove(file_location)
+        # Kiểm tra nếu Gemini ném ra lỗi trong quá trình call API
+        if "error" in ai_analysis:
+            return JSONResponse(status_code=500, content=ai_analysis)
         
-        # 5. Gói ghém kết quả trả về cho Frontend
+        # 4. Gói ghém kết quả phân tầng rõ ràng cho Frontend
         return {
             "status": "success",
-            "roboflow_metrics": metrics,
-            "expert_advice": ai_analysis
+            "data": {
+                "raw_metrics": metrics,                     # Dữ liệu gốc (để debug hoặc đếm số mụn)
+                "scores": ai_analysis.get("scores", {}),    # Thang điểm 10 đã tính toán (Frontend dùng để vẽ biểu đồ)
+                "consultation": {                           # Lời khuyên từ chuyên gia AI
+                    "skin_analysis": ai_analysis.get("skin_analysis"),
+                    "product_check": ai_analysis.get("product_check"),
+                    "recommendations": ai_analysis.get("recommendations")
+                }
+            }
         }
 
     except Exception as e:
         return JSONResponse(status_code=500, content={"message": str(e)})
     finally:
+        # 5. Dọn dẹp rác: Luôn xóa file ảnh tạm dù code chạy thành công hay lỗi
         if file_location and os.path.exists(file_location):
             os.remove(file_location)
